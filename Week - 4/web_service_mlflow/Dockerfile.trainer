@@ -1,0 +1,14 @@
+# Dockerfile.trainer
+FROM python:3.11.13-slim-bookworm
+
+RUN pip install --upgrade pip && pip install pipenv
+
+WORKDIR /app
+
+COPY Pipfile Pipfile.lock ./
+RUN pipenv install --system --deploy
+
+COPY random-forest.py .
+COPY predict.py . 
+
+# Data files are downloaded by the script, so no need to copy

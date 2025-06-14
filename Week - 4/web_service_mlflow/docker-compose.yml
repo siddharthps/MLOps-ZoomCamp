@@ -1,0 +1,48 @@
+# docker-compose.yaml
+services:
+  duration-prediction:
+    build: .
+    ports:
+      - "9696:9696"
+    depends_on:
+      - mlflow-server
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MLFLOW_EXPERIMENT_NAME=green-taxi-duration-mlflow
+    volumes:
+      # Mount ./mlruns to the same artifact root path as the MLflow server
+      - ./mlruns:/mlflow/artifacts # <--- CHANGE THIS LINE! This ensures consistency.
+
+  mlflow-server:
+    image: ghcr.io/mlflow/mlflow
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./mlruns:/mlflow/artifacts
+      - ./mlflow_data:/mlflow
+      # This means that the mlflow.db will be created INSIDE ./mlflow_data on the host.
+      # And inside the container, it will be at /mlflow/mlflow.db
+    command: 
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      # You can put comments *outside* the 'command' block or on lines that aren't part of the actual command.
+
+  # NEW SERVICE FOR TRAINING
+  model-trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.trainer
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MLFLOW_EXPERIMENT_NAME=green-taxi-duration-mlflow
+    volumes:
+      # Also mount ./mlruns to /mlflow/artifacts in the trainer,
+      # though MLflow's client usually handles artifact logging relative to the tracking URI.
+      # It's good practice for consistency.
+      - ./mlruns:/mlflow/artifacts # <--- Also change this line for trainer consistency
+    command: python random-forest.py
+    depends_on:
+      - mlflow-server
