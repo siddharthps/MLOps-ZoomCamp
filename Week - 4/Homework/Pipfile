@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+scikit-learn = "==1.5.0"
+pandas = "*"
+pyarrow = "*"  # Needed for reading parquet files
+ipykernel = "*" # Needed for ipynb files
+numpy = "*"
+
+[requires]
+python_version = "3.11"
+
+[dev-packages]

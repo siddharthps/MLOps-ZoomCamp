@@ -1,5 +1,3 @@
-Here's a detailed `README.md` file for your MLOps project, covering the purpose of each file, how to run the system, and the valuable troubleshooting lessons learned.
-
 ---
 
 # MLOps with MLflow and Docker Compose: NYC Yellow Taxi Duration Prediction
