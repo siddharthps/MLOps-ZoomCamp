@@ -1,0 +1,45 @@
+version: '3.8'
+
+volumes: 
+  grafana_data: {}
+
+networks:
+  front-tier:
+  back-tier:
+
+services:
+  db:
+    image: postgres:11
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: dbpass
+    ports:
+      - "5432:5432"
+    networks:
+      - back-tier
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - back-tier
+      - front-tier
+
+  grafana:
+    image: grafana/grafana
+    user: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - back-tier
+      - front-tier
+    environment:
+      - GF_PLUGINS_ALLOW_UNSIGNED_PLUGINS=grafana-exploretraces-app,grafana-metricsdrilldown-app
+    volumes:
+      - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/grafana_datasources.yaml:ro
+
+
+     
