@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 volumes: 
   grafana_data: {}
@@ -9,10 +9,10 @@ networks:
 
 services:
   db:
-    image: postgres:11
+    image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: dbpass
+      POSTGRES_PASSWORD: example
     ports:
       - "5432:5432"
     networks:
@@ -28,24 +28,30 @@ services:
       - front-tier
 
   grafana:
-    image: grafana/grafana
-    user: grafana
-    restart: always
+    image: grafana/grafana-enterprise
+    user: "472"
     ports:
       - "3000:3000"
+    volumes:
+      - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./dashboards:/opt/grafana/dashboards
     networks:
       - back-tier
       - front-tier
-    environment:
-      - GF_PLUGINS_ALLOW_UNSIGNED_PLUGINS=grafana-exploretraces-app,grafana-metricsdrilldown-app
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: always
+
+  mage:
+    image: mageai/mageai:latest
+    ports:
+      - "6789:6789"
     volumes:
-      - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/grafana_datasources.yaml:ro
-      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
-      - ./dashboards:/opt/grafana/dashboards
-    
-
-
-
-     
+      - ./mage:/home/src
+      - ./data:/home/src/data
+      - ./models:/home/src/models
+      - ./requirements.txt:/home/src/requirements.txt
+    working_dir: /home/src
+    entrypoint: /bin/bash -c "pip install -r requirements.txt && mage start taxi_monitoring"
+    networks:
+      - back-tier
+      - front-tier

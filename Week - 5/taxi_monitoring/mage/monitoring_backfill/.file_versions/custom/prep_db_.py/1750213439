@@ -1,0 +1,20 @@
+if 'custom' not in globals():
+    from mage_ai.data_preparation.decorators import custom
+if 'test' not in globals():
+    from mage_ai.data_preparation.decorators import test
+
+
+@custom
+def transform_custom(*args, **kwargs):
+    import psycopg
+
+    def execute():
+        create_table_statement = """
+        drop table if exists dummy_metrics;
+        create table dummy_metrics(
+            timestamp timestamp,
+            prediction_drift float,
+            num_drifted_columns integer,
+            share_missing_values float
+        )
+        """
