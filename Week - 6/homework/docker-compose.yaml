@@ -1,0 +1,14 @@
+services:
+  localstack:
+    container_name: localstack_main
+    image: localstack/localstack:latest
+    ports:
+      - "127.0.0.1:4566:4566" # S3 and other services
+    environment:
+      - SERVICES=s3 # Only run S3 for this example
+      - DEFAULT_REGION=us-east-1 # Or any region you prefer
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DEBUG=1
+    volumes:
+      - "./.localstack:/var/lib/localstack" # Persistent data
+      - "/var/run/docker.sock:/var/run/docker.sock" # Required for some Localstack features
